@@ -1,0 +1,66 @@
+version: "3.8"
+
+services:
+  prestashop:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - prestashop-data:/var/www/html
+    networks:
+      - global-network
+
+  db:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: prestashop
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - db-data:/var/lib/mysql
+    networks:
+      - global-network
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    environment:
+      PMA_HOST: db
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "8081:80"
+    depends_on:
+      - db
+    networks:
+      - global-network
+
+  nginx:
+    image: nginx:latest
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./nginx/ssl/cert.pem:/etc/ssl/certs/cert.pem:ro
+      - ./nginx/ssl/key.pem:/etc/ssl/private/key.pem:ro
+
+    depends_on:
+      - prestashop
+    ports:
+      - "80:80"
+      - "443:443"
+    networks:
+      - global-network
+
+
+volumes:
+  db-data:
+  prestashop-data:
+
+networks:
+  global-network:
