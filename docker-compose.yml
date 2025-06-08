@@ -5,6 +5,13 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    environment:
+      DB_SERVER: db
+      DB_USER: ${MYSQL_USER}
+      DB_PASSWORD: ${MYSQL_PASSWORD}
+      DB_NAME: ${MYSQL_DATABASE}
+      PS_LANGUAGE: fr
+      PS_COUNTRY: FR
     depends_on:
       db:
         condition: service_healthy
