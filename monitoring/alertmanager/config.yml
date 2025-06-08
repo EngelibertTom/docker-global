@@ -1,0 +1,18 @@
+global:
+  smtp_smarthost: 'localhost:1025'
+  smtp_from: 'alertmanager@localhost'
+
+route:
+  receiver: 'default'
+
+receivers:
+  - name: 'default'
+    email_configs:
+      - to: 'admin@localhost'
+        subject: 'ALERTE: {{ .GroupLabels.alertname }}'
+        body: |
+          🚨 ALERTE 🚨
+          {{ range .Alerts }}
+          Problème: {{ .Annotations.summary }}
+          Serveur: {{ .Labels.instance }}
+          {{ end }}
